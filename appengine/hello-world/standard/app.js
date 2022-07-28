@@ -24,8 +24,43 @@ const datastore = new Datastore({
   projectId: 'getting-hire',
 });
 
+const insertVariable = (variable) => {
+  return datastore.save({
+    key: datastore.key('variable'),
+    data: variable
+  });
+}
+
+const getVisits = () => {
+  const query = datastore
+    .createQuery('variable')
+    .limit(10);
+
+  return datastore.runQuery(query);
+};
+
 app.get('/', (req, res) => {
   res.status(200).send('Hello, world!').end();
+});
+
+app.get('/set', async (req, res, next) => {
+  const name = req.query.variable_name;
+  const value = req.query.variable_value;
+
+  try {
+    await insertVariable({name, value});
+    const [entities] = await getVisits();
+    const variables = entities.map(
+      entity => `Variable Name: ${entity.name}, Variable Value: ${entity.value}`
+    );
+    res
+    .status(200)
+    .set('Content-Type', 'text/plain')
+    .send(`Last 10 variables:\n${variables.join('\n')}`)
+    .end();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Start the server
