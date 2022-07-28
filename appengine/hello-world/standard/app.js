@@ -16,8 +16,13 @@
 
 // [START gae_node_request_example]
 const express = require('express');
+const {Datastore} = require('@google-cloud/datastore');
 
 const app = express();
+
+const datastore = new Datastore({
+  projectId: 'getting-hire',
+});
 
 app.get('/', (req, res) => {
   res.status(200).send('Hello, world!').end();
