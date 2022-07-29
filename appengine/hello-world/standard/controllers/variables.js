@@ -1,12 +1,27 @@
-const datastore = require('../datastore/datastore')
+const datastore = require('../datastore/datastore');
+
+module.exports.test = async (req, res, next) => {
+    const name = "test";
+    const jwt = req.headers.authorization.replace('Bearer ', '');
+
+    try {
+        const result = await datastore.test(name, jwt);
+        res.status(200)
+            .set('Content-Type', 'text/plain')
+            .send(`${result}`)
+            .end()
+    } catch (error) {
+        next(error);
+    }
+}
 
 module.exports.insertVariable = async (req, res, next) => {
     const name = req.query.variable_name
     const value = req.query.variable_value
-    const hash = req.headers.authorization
+    const jwt = req.headers.authorization.replace('Bearer ', '');
 
     try {
-        await datastore.insertVatiable({ name, value }, hash, (new Date()).toISOString() )
+        await datastore.insertVatiable({ name, value }, jwt, (new Date()).toISOString() );
         res.status(200)
             .set('Content-Type', 'text/plain')
             .send(`${name} = ${value}`)
