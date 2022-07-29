@@ -1,5 +1,12 @@
 const datastore = require('../datastore/datastore');
 
+const sendSuccessResponce = (res, string) => {
+    res.status(200)
+        .set('Content-Type', 'text/plain')
+        .send(string)
+        .end();
+}
+
 module.exports.insertVariable = async (req, res, next) => {
     const name = req.query.name;
     const value = req.query.value;
@@ -7,10 +14,7 @@ module.exports.insertVariable = async (req, res, next) => {
 
     try {
         await datastore.insertVatiable({ name, value }, jwt, (new Date()).toISOString() );
-        res.status(200)
-            .set('Content-Type', 'text/plain')
-            .send(`${name} = ${value}`)
-            .end()
+        sendSuccessResponce(res, `${name} = ${value}`);
     } catch (error) {
         next(error)
     }
@@ -22,10 +26,7 @@ module.exports.unsetVariable = async (req, res, next) => {
     
     try {
         await datastore.unsetVariable(name, jwt);
-        res.status(200)
-            .set('Content-Type', 'text/plain')
-            .send(`${name} = None`)
-            .end()
+        sendSuccessResponce(res, `${name} = None`);
     } catch (error) {
         next(error)
     }
@@ -37,15 +38,13 @@ module.exports.getNumEqualTo = async (req, res, next) => {
 
     try {
        const count = await datastore.getNumEqualTo(value, jwt);
-       res.status(200)
-            .set('Content-Type', 'text/plain')
-            .send(`${count}`)
-            .end()
+       sendSuccessResponce(res, `${count}`);
     } catch (error) {
         next(error);
     }
 };
 
+// Temponary function for debug
 module.exports.getVariables = async (req, res, next) => {
     const query = datastore.createQuery('Variable').order('updated');
 
@@ -53,52 +52,54 @@ module.exports.getVariables = async (req, res, next) => {
         datastore.runQuery(query).then((results) => {
             const variables = results[0].map((variable, i) => {
                 return `${i + 1}. ${variable.name} = ${variable.value}`
-            })
-            res.status(200)
-                .set('Content-Type', 'text/plain')
-                .send(variables.join('\n'))
-                .end()
+            });
+            sendSuccessResponce(res, variables.join('\n'));
         })
     } catch (error) {
         next(error)
     }
 };
+//
 
 module.exports.deleteEntities = async (req, res, next) => {
-    const query = datastore.createQuery('Variable');
+    const jwt = req.headers.authorization.replace('Bearer ', '');
 
     try {
-        datastore.runQuery(query).then((results) => {
-            const keys = results[0].map((variable) => {
-                return variable[datastore.KEY];
-            })
-            datastore.delete(keys)
-            .then(() => {
-                res.status(200)
-                .set('Content-Type', 'text/plain')
-                .send('CLEANED')
-                .end()
-            });
-            
-        })
+        const result = await datastore.clear(jwt);
+        sendSuccessResponce(res, result);
     } catch (error) {
         next(error)
     }
 };
 
 module.exports.getVariableValue = async (req, res, next) => {
-    const name = req.query.name
+    const name = req.query.name;
     const jwt = req.headers.authorization.replace('Bearer ', '');
 
     try {
-        const result = await datastore.getVariableValue(name, jwt)
-        res.status(200)
-            .set('Content-Type', 'text/plain')
-            .send(
-                `${result}`
-            )
-            .end()
+        const result = await datastore.getVariableValue(name, jwt);
+        sendSuccessResponce(res, `${result}`);
     } catch (error) {
         next(error)
     }
 };
+
+module.exports.undo = async (req, res, next) => {
+    const jwt = req.headers.authorization.replace('Bearer ', '');
+    try {
+        const result = await datastore.undo(jwt);
+        sendSuccessResponce(res, `${result}`);
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports.redo = async (req, res, next) => {
+    const jwt = req.headers.authorization.replace('Bearer ', '');
+    try {
+        const result = await datastore.redo(jwt);
+        sendSuccessResponce(res, `${result}`);
+    } catch (error) {
+        next(error)
+    }
+}
