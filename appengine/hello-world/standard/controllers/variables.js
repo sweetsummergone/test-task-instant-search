@@ -14,7 +14,7 @@ module.exports.insertVariable = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
-}
+};
 
 module.exports.unsetVariable = async (req, res, next) => {
     const name = req.query.name;
@@ -29,7 +29,22 @@ module.exports.unsetVariable = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
-}
+};
+
+module.exports.getNumEqualTo = async (req, res, next) => {
+    const value = req.query.value;
+    const jwt = req.headers.authorization.replace('Bearer ', '');
+
+    try {
+       const count = await datastore.getNumEqualTo(value, jwt);
+       res.status(200)
+            .set('Content-Type', 'text/plain')
+            .send(`${count}`)
+            .end()
+    } catch (error) {
+        next(error);
+    }
+};
 
 module.exports.getVariables = async (req, res, next) => {
     const query = datastore.createQuery('Variable').order('updated');
@@ -47,7 +62,7 @@ module.exports.getVariables = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
-}
+};
 
 module.exports.deleteEntities = async (req, res, next) => {
     const query = datastore.createQuery('Variable');
@@ -69,7 +84,7 @@ module.exports.deleteEntities = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
-}
+};
 
 module.exports.getVariableValue = async (req, res, next) => {
     const name = req.query.name
@@ -86,4 +101,4 @@ module.exports.getVariableValue = async (req, res, next) => {
     } catch (error) {
         next(error)
     }
-}
+};

@@ -60,6 +60,15 @@ class DatastoreVariables extends Datastore {
     }
   }
 
+  getNumEqualTo = async (value, jwt) => {
+    const query = this.createQuery('Variable')
+      .filter('value', '=', value)
+      .filter('jwt', '=', jwt);
+    
+    const result = await this.runQuery(query);
+    return !!result[0][0] ? result[0].length : 0;
+  }
+
   getVariableValue = async (name, jwt) => {
     const query = this.createQuery('Variable')
       .filter('name', '=', name)
