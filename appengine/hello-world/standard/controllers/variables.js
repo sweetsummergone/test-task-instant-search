@@ -1,23 +1,8 @@
 const datastore = require('../datastore/datastore');
 
-module.exports.test = async (req, res, next) => {
-    const name = "test";
-    const jwt = req.headers.authorization.replace('Bearer ', '');
-
-    try {
-        const result = await datastore.test(name, jwt);
-        res.status(200)
-            .set('Content-Type', 'text/plain')
-            .send(`${result}`)
-            .end()
-    } catch (error) {
-        next(error);
-    }
-}
-
 module.exports.insertVariable = async (req, res, next) => {
-    const name = req.query.variable_name
-    const value = req.query.variable_value
+    const name = req.query.name;
+    const value = req.query.value;
     const jwt = req.headers.authorization.replace('Bearer ', '');
 
     try {
@@ -25,6 +10,21 @@ module.exports.insertVariable = async (req, res, next) => {
         res.status(200)
             .set('Content-Type', 'text/plain')
             .send(`${name} = ${value}`)
+            .end()
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports.unsetVariable = async (req, res, next) => {
+    const name = req.query.name;
+    const jwt = req.headers.authorization.replace('Bearer ', '');
+    
+    try {
+        await datastore.unsetVariable(name, jwt);
+        res.status(200)
+            .set('Content-Type', 'text/plain')
+            .send(`${name} = None`)
             .end()
     } catch (error) {
         next(error)
@@ -71,16 +71,16 @@ module.exports.deleteEntities = async (req, res, next) => {
     }
 }
 
-module.exports.getVariable = async (req, res, next) => {
-    const name = req.query.variable_name
+module.exports.getVariableValue = async (req, res, next) => {
+    const name = req.query.name
+    const jwt = req.headers.authorization.replace('Bearer ', '');
 
     try {
-        const result = await getVariable(name)
-        console.log(result)
+        const result = await datastore.getVariableValue(name, jwt)
         res.status(200)
             .set('Content-Type', 'text/plain')
             .send(
-                `Variable Name: ${result.name}, Variable Value: ${result.value}`
+                `${result}`
             )
             .end()
     } catch (error) {

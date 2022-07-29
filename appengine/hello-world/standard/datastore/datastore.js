@@ -4,7 +4,7 @@ class DatastoreVariables extends Datastore {
   _validateUnique = async (name, jwt) => {
     const query = this.createQuery('Variable')
       .filter('name', '=', name)
-      .filter('jwt', '=', jwt)
+      .filter('jwt', '=', jwt);
     const result = await this.runQuery(query)
     return result[0]
   }
@@ -47,10 +47,26 @@ class DatastoreVariables extends Datastore {
     }
   }
 
-  getVariable = async (name, hash) => {
-    const query = this.createQuery('variable').filter('name', '=', name)
+  unsetVariable = async (name, jwt) => {
+    const query = this.createQuery('Variable')
+      .filter('name', '=', name)
+      .filter('jwt', '=', jwt);
+    const result = await this.runQuery(query);
+    try {
+      await this.delete(result[0][0][this.KEY]);
+    }
+    catch(err) {
+      console.log(err);
+    }
+  }
 
-    return this.runQuery(query)
+  getVariableValue = async (name, jwt) => {
+    const query = this.createQuery('Variable')
+      .filter('name', '=', name)
+      .filter('jwt', '=', jwt);
+
+    const result = await this.runQuery(query);
+    return !!result[0][0] ? result[0][0].value : 'None';
   }
 }
 
