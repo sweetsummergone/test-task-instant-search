@@ -6,7 +6,7 @@ module.exports.insertVariable = async (req, res, next) => {
     const hash = req.headers.authorization
 
     try {
-        await datastore.insertVatiable({ name, value }, hash)
+        await datastore.insertVatiable({ name, value }, hash, (new Date()).toISOString() )
         res.status(200)
             .set('Content-Type', 'text/plain')
             .send(`${name} = ${value}`)
@@ -17,7 +17,7 @@ module.exports.insertVariable = async (req, res, next) => {
 }
 
 module.exports.getVariables = async (req, res, next) => {
-    const query = datastore.createQuery('Variable')
+    const query = datastore.createQuery('Variable').order('updated');
 
     try {
         datastore.runQuery(query).then((results) => {
@@ -28,6 +28,28 @@ module.exports.getVariables = async (req, res, next) => {
                 .set('Content-Type', 'text/plain')
                 .send(variables.join('\n'))
                 .end()
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports.deleteEntities = async (req, res, next) => {
+    const query = datastore.createQuery('Variable');
+
+    try {
+        datastore.runQuery(query).then((results) => {
+            const keys = results[0].map((variable) => {
+                return variable[datastore.KEY];
+            })
+            datastore.delete(keys)
+            .then(() => {
+                res.status(200)
+                .set('Content-Type', 'text/plain')
+                .send('CLEANED')
+                .end()
+            });
+            
         })
     } catch (error) {
         next(error)

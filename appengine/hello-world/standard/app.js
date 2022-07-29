@@ -20,14 +20,6 @@ const express = require('express');
 const app = express();
 const routerVariables = require('./routes/variables');
 
-const getVisits = () => {
-  const query = datastore
-    .createQuery('variable')
-    .limit(10);
-
-  return datastore.runQuery(query);
-};
-
 app.use('/', routerVariables);
 
 app.get('/', (req, res) => {

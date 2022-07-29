@@ -9,7 +9,7 @@ class DatastoreVariables extends Datastore {
         return this.runQuery(query);
     }
 
-    insertVatiable = async (variable, jwt) => {
+    insertVatiable = async (variable, jwt, updated) => {
         const variableKey = this.key('Variable');
         const entity = {
           key: variableKey,
@@ -21,6 +21,10 @@ class DatastoreVariables extends Datastore {
             {
               name: 'value',
               value: variable.value,
+            },
+            {
+              name: 'updated',
+              value: updated,
             },
             {
               name: 'jwt',
