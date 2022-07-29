@@ -16,20 +16,9 @@
 
 // [START gae_node_request_example]
 const express = require('express');
-const {Datastore} = require('@google-cloud/datastore');
 
 const app = express();
-
-const datastore = new Datastore({
-  projectId: 'getting-hire',
-});
-
-const insertVariable = (variable) => {
-  return datastore.save({
-    key: datastore.key('variable'),
-    data: variable
-  });
-}
+const routerVariables = require('./routes/variables');
 
 const getVisits = () => {
   const query = datastore
@@ -39,28 +28,10 @@ const getVisits = () => {
   return datastore.runQuery(query);
 };
 
+app.use('/', routerVariables);
+
 app.get('/', (req, res) => {
   res.status(200).send('Hello, world!').end();
-});
-
-app.get('/set', async (req, res, next) => {
-  const name = req.query.variable_name;
-  const value = req.query.variable_value;
-
-  try {
-    await insertVariable({name, value});
-    const [entities] = await getVisits();
-    const variables = entities.map(
-      entity => `Variable Name: ${entity.name}, Variable Value: ${entity.value}`
-    );
-    res
-    .status(200)
-    .set('Content-Type', 'text/plain')
-    .send(`Last 10 variables:\n${variables.join('\n')}`)
-    .end();
-  } catch (error) {
-    next(error);
-  }
 });
 
 // Start the server

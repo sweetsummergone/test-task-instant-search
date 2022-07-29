@@ -18,8 +18,8 @@
     "test": "mocha --exit test/*.test.js"
   },
   "dependencies": {
-    "@google-cloud/storage": "^6.2.3",
     "@google-cloud/datastore": "^7.0.0",
+    "@google-cloud/storage": "^6.2.3",
     "express": "^4.17.1",
     "nodemon": "^2.0.19"
   },
