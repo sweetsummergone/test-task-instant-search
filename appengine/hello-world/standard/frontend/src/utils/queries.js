@@ -25,3 +25,16 @@ export const setVariable = (token, data) => {
         return res.json();
     })
 }
+
+export const unsetVariable = (token, name) => {
+    return fetch(`${BASE_URL}/unset?name=${name}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((res) => {
+        return res.json();
+    })
+}

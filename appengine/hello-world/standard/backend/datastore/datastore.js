@@ -151,7 +151,7 @@ class DatastoreVariables extends Datastore {
   };
 
   unsetVariable = async (name, jwt) => {
-    const lastValue = await this.getVariableValue(variable.name, jwt);
+    const lastValue = await this.getVariableValue(name, jwt);
     const key = await this._unsetVariable(name, jwt);
     const currentStack = !!this.undoStack.get(jwt)
       ? this.undoStack.get(jwt)
@@ -160,7 +160,7 @@ class DatastoreVariables extends Datastore {
       key,
       operation: 'unset',
       lastValue,
-      data: { name: variable.name, value: variable.value, updated },
+      data: { name, value: 'None', updated: (new Date()).toISOString() },
     });
     this.undoStack.set(jwt, currentStack);
   };

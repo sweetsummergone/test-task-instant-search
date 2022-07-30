@@ -24,10 +24,10 @@ module.exports.insertVariable = async (req, res, next) => {
 module.exports.unsetVariable = async (req, res, next) => {
   const name = req.query.name;
   const jwt = req.headers.authorization.replace('Bearer ', '');
-
+  
   try {
     await datastore.unsetVariable(name, jwt);
-    sendSuccessResponce(res, `${name} = None`);
+    sendSuccessResponce(res, {[name] : 'None'});
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ module.exports.getNumEqualTo = async (req, res, next) => {
 
   try {
     const count = await datastore.getNumEqualTo(value, jwt);
-    sendSuccessResponce(res, `${count}`);
+    sendSuccessResponce(res, count);
   } catch (error) {
     next(error);
   }
@@ -81,7 +81,7 @@ module.exports.getVariableValue = async (req, res, next) => {
 
   try {
     const result = await datastore.getVariableValue(name, jwt);
-    sendSuccessResponce(res, `${result}`);
+    sendSuccessResponce(res, {[name]: result});
   } catch (error) {
     next(error);
   }
@@ -91,7 +91,7 @@ module.exports.undo = async (req, res, next) => {
   const jwt = req.headers.authorization.replace('Bearer ', '');
   try {
     const result = await datastore.undo(jwt);
-    sendSuccessResponce(res, `${result}`);
+    sendSuccessResponce(res, result);
   } catch (error) {
     next(error);
   }
@@ -101,7 +101,7 @@ module.exports.redo = async (req, res, next) => {
   const jwt = req.headers.authorization.replace('Bearer ', '');
   try {
     const result = await datastore.redo(jwt);
-    sendSuccessResponce(res, `${result}`);
+    sendSuccessResponce(res, result);
   } catch (error) {
     next(error);
   }

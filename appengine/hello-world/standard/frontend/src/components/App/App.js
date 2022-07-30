@@ -1,5 +1,5 @@
 import Main from '../Main/Main';
-import { getAllVariables, setVariable } from '../../utils/queries';
+import { getAllVariables, setVariable, unsetVariable } from '../../utils/queries';
 import { register, logout } from '../../utils/auth';
 import { useEffect, useState } from 'react';
 
@@ -13,10 +13,18 @@ function App() {
         await setVariable(token, data);
         setVariables({...variables, [data.name] : data.value});
         break;
+      case 'unset':
+        await unsetVariable(token, data.name);
+        setVariables({...variables, [data.name] : 'None'});
+        break;
       default:
         break;
     }
   };
+
+  useEffect(() => {
+    console.log(variables);
+  }, [variables])
 
   useEffect(() => {
     if (!token) {
