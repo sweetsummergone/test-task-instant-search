@@ -33,27 +33,7 @@ class DatastoreVariables extends Datastore {
       };
       if (lastCommand.operation === 'set') {
         try {
-          await this.update({
-            key: lastCommand.key,
-            data: [
-              {
-                name: 'name',
-                value: lastCommand.data.name,
-              },
-              {
-                name: 'value',
-                value: lastCommand.lastValue,
-              },
-              {
-                name: 'updated',
-                value: lastCommand.data.updated,
-              },
-              {
-                name: 'jwt',
-                value: jwt,
-              },
-            ],
-          });
+          this._insertVariable({ name: lastCommand.data.name, value: lastCommand.lastValue }, jwt, lastCommand.data.updated);
           push('unset');
           return {[lastCommand.data.name] : lastCommand.lastValue};
         } catch (err) {
@@ -84,7 +64,7 @@ class DatastoreVariables extends Datastore {
     const isUnique = !!!unique[0];
     const variableKey = isUnique ? this.key('Variable') : unique[0][this.KEY];
 
-    const entity = {
+    const entity = !!stackEntity ? stackEntity : {
       key: variableKey,
       data: [
         {
@@ -193,11 +173,13 @@ class DatastoreVariables extends Datastore {
   };
 
   undo = async (jwt) => {
-    return this._stackOperate(jwt, this.callStack, this.undoStack);
+    const result = await this._stackOperate(jwt, this.callStack, this.undoStack);
+    return result;
   };
 
   redo = async (jwt) => {
-    return this._stackOperate(jwt, this.undoStack, this.callStack);
+    const result = await this._stackOperate(jwt, this.undoStack, this.callStack);
+    return result;
   };
 }
 

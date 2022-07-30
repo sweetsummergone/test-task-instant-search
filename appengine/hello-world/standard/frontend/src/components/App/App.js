@@ -18,7 +18,9 @@ function App() {
       validateRequest(response, () => {
         if (typeof response === 'object') {
           setVariables({...variables, [Object.keys(response)[0]] : Object.values(response)[0]});
-          return `${Object.keys(response)[0]} = ${Object.values(response)[0]}`;
+          setResponse(`${Object.keys(response)[0]} = ${Object.values(response)[0]}`);
+        } else {
+          setResponse(response);
         }
       });
     }
@@ -41,6 +43,7 @@ function App() {
         const unsetValue = await unsetVariable(token, data.name);
         validateRequest(unsetValue, () => {
           setVariables({...variables, [data.name] : 'None'});
+          setResponse(`${[data.name]} = None`)
         })
         break;
       case 'numequalto':
@@ -50,12 +53,10 @@ function App() {
         })
         break;
       case 'undo':
-        const undoResponse = await undoRedo(undo);
-        setResponse(undoResponse);
+        await undoRedo(undo);
         break;
       case 'redo':
-        const redoResponse = await undoRedo(redo);
-        setResponse(redoResponse);
+        await undoRedo(redo);
         break;
       case 'end':
         const endResponse = await end(token);
