@@ -20,16 +20,36 @@ class DatastoreVariables extends Datastore {
     const currentPushStack = !!stackToPush.get(jwt) ? stackToPush.get(jwt) : [];
     if (!!currentPopStack[0]) {
       const lastCommand = currentPopStack.pop();
-      const popAndPush = (operation) => {
-        currentPushStack.push({ key: lastCommand.key, operation, data: lastCommand.data });
+      const push = (operation) => {
+        currentPushStack.push({ key: lastCommand.key, lastValue: lastCommand.lastValue, operation, data: lastCommand.data });
         stackToPush.set(jwt, currentPushStack);
         stackToPop.set(jwt, currentPopStack);
       }
       if (lastCommand.operation === 'set') {
         try {
-          await this.delete(lastCommand.key);
-          popAndPush("unset");
-          return currentPopStack.length > 0 ? `${lastCommand.data.name} = ${currentPopStack[currentPopStack.length - 1].data.value}` : `${lastCommand.data.name} = None`
+          await this.update({
+            key: lastCommand.key,
+            data: [
+              {
+                name: 'name',
+                value: lastCommand.data.name,
+              },
+              {
+                name: 'value',
+                value: lastCommand.lastValue,
+              },
+              {
+                name: 'updated',
+                value: lastCommand.data.updated,
+              },
+              {
+                name: 'jwt',
+                value: jwt,
+              },
+            ],
+          });
+          push("unset");
+          return `${lastCommand.data.name} = ${lastCommand.lastValue}`;
         }
         catch(err) {
           console.log(err);
@@ -37,7 +57,7 @@ class DatastoreVariables extends Datastore {
       } else {
         try {
           await this._insertVariable({ name: lastCommand.data.name, value: lastCommand.data.value }, jwt, lastCommand.data.updated);
-          popAndPush("set");
+          push("set");
           return `${lastCommand.data.name} = ${currentPushStack[currentPushStack.length - 1].data.value}`
         }
         catch(err) {
@@ -79,10 +99,8 @@ class DatastoreVariables extends Datastore {
     try {
       if (isUnique) {
         await this.save(entity);
-        console.log(`Variable ${variableKey.id} created successfully.`);
       } else {
         await this.update(entity);
-        console.log(`Variable ${variableKey.id} updated successfully.`);
       }
       return variableKey;
     } catch (err) {
@@ -105,16 +123,18 @@ class DatastoreVariables extends Datastore {
   }
 
   insertVatiable = async (variable, jwt, updated) => {
+    const lastValue = await this.getVariableValue(variable.name, jwt);
     const key = await this._insertVariable(variable, jwt, updated);
     const currentStack = !!this.callStack.get(jwt) ? this.callStack.get(jwt) : [];
-    currentStack.push({ key, operation: "set", data: { name: variable.name, value: variable.value, updated } });
+    currentStack.push({ key, operation: "set", lastValue, data: { name: variable.name, value: variable.value, updated } });
     this.callStack.set(jwt, currentStack);
   };
 
   unsetVariable = async (name, jwt) => {
+    const lastValue = await this.getVariableValue(variable.name, jwt);
     const key = await this._unsetVariable(name, jwt)
     const currentStack = !!this.undoStack.get(jwt) ? this.undoStack.get(jwt) : [];
-    currentStack.push({ key, operation: "unset", data: { name: variable.name, value: variable.value, updated } });
+    currentStack.push({ key, operation: "unset", lastValue, data: { name: variable.name, value: variable.value, updated } });
     this.undoStack.set(jwt, currentStack);
   }
 
