@@ -64,7 +64,7 @@ class DatastoreVariables extends Datastore {
     const isUnique = !!!unique[0];
     const variableKey = isUnique ? this.key('Variable') : unique[0][this.KEY];
 
-    const entity = !!stackEntity ? stackEntity : {
+    const entity = {
       key: variableKey,
       data: [
         {
@@ -85,7 +85,6 @@ class DatastoreVariables extends Datastore {
         },
       ],
     };
-
     try {
       if (isUnique) {
         await this.save(entity);

@@ -20,25 +20,16 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 const app = express();
+const router = express.Router();
 
 const { catchError, ErrorHandler } = require('./utils/error');
-const auth = require('./middlewares/auth');
-const routerVariables = require('./routes/variables');
-const { createToken } = require('./utils/auth');
 
 app.use(express.json());
 app.use(helmet());
 app.use(cors());
 app.options('*', cors());
 
-app.get('/', (req, res) => {
-  const token = createToken(req.ip);
-  res.send({ token });
-});
-app.use('/', auth, routerVariables);
-app.get('*', () => {
-  throw new ErrorHandler(404, 'Requested resource not found');
-});
+require('./routes/variables')(app);
 
 app.use((err, req, res, next) => {
   catchError(err, res);
