@@ -37,7 +37,7 @@ function Input({onRequest}) {
             </select>
             {singleInput.includes(formData.request) && (
                 <>
-                    <input required className="form__input" value={formData.request ? formData.value || "" : formData.name || ""} name={formData.request === "numequalto" ? "value" : "name"} placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
+                    <input required className="form__input" value={formData.request === "numequalto" ? formData.value || "" : formData.name || ""} name={formData.request === "numequalto" ? "value" : "name"} placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
                 </>
             )}
             {doubleInput.includes(formData.request) && (
