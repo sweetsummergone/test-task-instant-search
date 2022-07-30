@@ -81,7 +81,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    getAllVariables(token).then((res) => setVariables(res));
+    if (token) {
+      getAllVariables(token).then((res) => {
+        setVariables(res);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

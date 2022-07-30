@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://localhost:8080';
+export const BASE_URL = 'https://getting-hire.ew.r.appspot.com';
 
 const _customFetch = (token, url) => {
   return fetch(`${BASE_URL}/${url}`, {
@@ -9,6 +9,7 @@ const _customFetch = (token, url) => {
       Authorization: `Bearer ${token}`,
     },
   }).then((res) => {
+    res.text().then((text) => console.log(text));
     return res.json();
   });
 }
