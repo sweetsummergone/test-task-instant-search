@@ -18,23 +18,35 @@ function App() {
       return response;
     }
 
+    const validateRequest = (response, callback) => {
+      !!response.message ? setResponse(response.message) : callback();
+    }
+
     switch (request) {
       case 'set':
-        await setVariable(token, data);
-        setVariables({...variables, [data.name] : data.value});
-        setResponse(`${data.name} = ${data.value}`);
+        const responseFromSet = await setVariable(token, data);
+        validateRequest(responseFromSet, () => {
+          setVariables({...variables, [data.name] : data.value});
+          setResponse(`${data.name} = ${data.value}`);
+        });
         break;
       case 'get':
         const receivedValue = await getVariable(token, data.name);
-        setResponse(`${Object.keys(receivedValue)[0]} = ${Object.values(receivedValue)[0]}`);
+        validateRequest(receivedValue, () => {
+          setResponse(`${Object.keys(receivedValue)[0]} = ${Object.values(receivedValue)[0]}`);
+        })
         break;
       case 'unset':
-        await unsetVariable(token, data.name);
-        setVariables({...variables, [data.name] : 'None'});
+        const unsetValue = await unsetVariable(token, data.name);
+        validateRequest(unsetValue, () => {
+          setVariables({...variables, [data.name] : 'None'});
+        })
         break;
       case 'numequalto':
         const variablesCount = await getNumEqualTo(token, data.value);
-        setResponse(variablesCount);
+        validateRequest(variablesCount, () => {
+          setResponse(variablesCount);
+        })
         break;
       case 'undo':
         const undoResponse = await undoRedo(undo);
@@ -53,7 +65,7 @@ function App() {
         break;
     }
   };
-  
+
   useEffect(() => {
     if (!token) {
       register().then((res) => {
@@ -75,6 +87,8 @@ function App() {
     const handleTabClose = async (event) => {
       event.preventDefault();
       await end(localStorage.getItem('jwt'));
+      setVariables({});
+      setResponse("");
     };
 
     window.addEventListener('beforeunload', handleTabClose);

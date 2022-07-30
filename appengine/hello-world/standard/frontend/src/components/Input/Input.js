@@ -20,8 +20,8 @@ function Input({onRequest}) {
     }
 
     const handleChange = (e) => {
-        const {name, value} = e.target
-        setFormData({...formData, [name]: value });
+        const {name, value} = e.target;
+        if (value.match(/[^A-Za-z0-9-._~:/?#[\]@!$&'()*+,;=]/g) === null) setFormData({...formData, [name]: value });
     };
 
     return (
@@ -37,13 +37,13 @@ function Input({onRequest}) {
             </select>
             {singleInput.includes(formData.request) && (
                 <>
-                    <input className="form__input" name={formData.request === "numequalto" ? "value" : "name"} placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
+                    <input required className="form__input" value={formData.request ? formData.value || "" : formData.name || ""} name={formData.request === "numequalto" ? "value" : "name"} placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
                 </>
             )}
             {doubleInput.includes(formData.request) && (
                 <>
-                    <input className="form__input" name="name" placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
-                    <input className="form__input" name="value" placeholder={placeholders[formData.request][1]} onChange={handleChange}/>
+                    <input required className="form__input" value={formData.name || ""} name="name" placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
+                    <input required className="form__input" value={formData.value || ""} name="value" placeholder={placeholders[formData.request][1]} onChange={handleChange}/>
                 </>
             )}
             <button className="form__submit">Send</button>
