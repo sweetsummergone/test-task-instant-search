@@ -1,6 +1,6 @@
 const datastore = require('../datastore/datastore');
 
-const sendSuccessResponce = (res, obj) => {
+const sendSuccessResponse = (res, obj) => {
   res.json(obj);
 };
 
@@ -15,7 +15,7 @@ module.exports.insertVariable = async (req, res, next) => {
       jwt,
       new Date().toISOString()
     );
-    sendSuccessResponce(res, {[name] : value});
+    sendSuccessResponse(res, {[name] : value});
   } catch (error) {
     next(error);
   }
@@ -27,7 +27,7 @@ module.exports.unsetVariable = async (req, res, next) => {
   
   try {
     await datastore.unsetVariable(name, jwt);
-    sendSuccessResponce(res, {[name] : 'None'});
+    sendSuccessResponse(res, {[name] : 'None'});
   } catch (error) {
     next(error);
   }
@@ -39,7 +39,7 @@ module.exports.getNumEqualTo = async (req, res, next) => {
 
   try {
     const count = await datastore.getNumEqualTo(value, jwt);
-    sendSuccessResponce(res, count);
+    sendSuccessResponse(res, count);
   } catch (error) {
     next(error);
   }
@@ -56,7 +56,7 @@ module.exports.getVariables = async (req, res, next) => {
       results[0].forEach((variable) => {
         variables[variable.name] = variable.value}
       );
-      sendSuccessResponce(res, variables);
+      sendSuccessResponse(res, variables);
     });
   } catch (error) {
     next(error);
@@ -69,7 +69,7 @@ module.exports.deleteEntities = async (req, res, next) => {
 
   try {
     const result = await datastore.clear(jwt);
-    sendSuccessResponce(res, result);
+    sendSuccessResponse(res, result);
   } catch (error) {
     next(error);
   }
@@ -81,7 +81,7 @@ module.exports.getVariableValue = async (req, res, next) => {
 
   try {
     const result = await datastore.getVariableValue(name, jwt);
-    sendSuccessResponce(res, {[name]: result});
+    sendSuccessResponse(res, {[name]: result});
   } catch (error) {
     next(error);
   }
@@ -91,7 +91,7 @@ module.exports.undo = async (req, res, next) => {
   const jwt = req.headers.authorization.replace('Bearer ', '');
   try {
     const result = await datastore.undo(jwt);
-    sendSuccessResponce(res, result);
+    sendSuccessResponse(res, result);
   } catch (error) {
     next(error);
   }
@@ -101,7 +101,7 @@ module.exports.redo = async (req, res, next) => {
   const jwt = req.headers.authorization.replace('Bearer ', '');
   try {
     const result = await datastore.redo(jwt);
-    sendSuccessResponce(res, result);
+    sendSuccessResponse(res, result);
   } catch (error) {
     next(error);
   }

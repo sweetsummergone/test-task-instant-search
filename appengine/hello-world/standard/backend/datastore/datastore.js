@@ -55,7 +55,7 @@ class DatastoreVariables extends Datastore {
             ],
           });
           push('unset');
-          return `${lastCommand.data.name} = ${lastCommand.lastValue}`;
+          return {[lastCommand.data.name] : lastCommand.lastValue};
         } catch (err) {
           if (!!err.message) throw new ErrorHandler(502, err.message);
           throw new ErrorHandler(502, 'Something goes wrong. Try again.');
@@ -68,9 +68,7 @@ class DatastoreVariables extends Datastore {
             lastCommand.data.updated
           );
           push('set');
-          return `${lastCommand.data.name} = ${
-            currentPushStack[currentPushStack.length - 1].data.value
-          }`;
+          return {[lastCommand.data.name] : currentPushStack[currentPushStack.length - 1].data.value};
         } catch (err) {
           if (!!err.message) throw new ErrorHandler(502, err.message);
           throw new ErrorHandler(502, 'Something goes wrong. Try again.');

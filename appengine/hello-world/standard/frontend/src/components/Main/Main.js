@@ -1,10 +1,10 @@
 import Input from "../Input/Input";
 
-function Main({onRequest, responce, variables}) {
+function Main({onRequest, response, variables}) {
     return (
         <main className="main">
             <Input onRequest={onRequest} />
-            <h2 className="responce">{responce}</h2>
+            <h2 className="response">{response}</h2>
             {Object.keys(variables).length > 0 ? <ul className="variables">
                 {Object.keys(variables).map((key, index) => {
                     return <li key={index} className="variable">{key} = {variables[key]}</li>
