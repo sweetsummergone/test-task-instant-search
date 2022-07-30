@@ -17,6 +17,7 @@
 // [START gae_node_request_example]
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -25,7 +26,11 @@ const auth = require('./middlewares/auth');
 const routerVariables = require('./routes/variables');
 const { createToken } = require('./utils/auth');
 
+app.use(express.json());
+app.use(helmet());
 app.use(cors());
+app.options('*', cors());
+
 app.get('/', (req, res) => {
   const token = createToken(req.ip);
   res.send({ token });
