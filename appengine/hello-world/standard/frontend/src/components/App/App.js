@@ -9,17 +9,18 @@ function App() {
   const [response, setResponse] = useState("");
 
   const handleRequest = async (request, data) => {
-    const undoRedo = async callback => {
-      const response = await callback(token);
-      if (typeof response === 'object') {
-        setVariables({...variables, [Object.keys(response)[0]] : Object.values(response)[0]});
-        return `${Object.keys(response)[0]} = ${Object.values(response)[0]}`;
-      }
-      return response;
-    }
-
     const validateRequest = (response, callback) => {
       !!response.message ? setResponse(response.message) : callback();
+    }
+
+    const undoRedo = async callback => {
+      const response = await callback(token);
+      validateRequest(response, () => {
+        if (typeof response === 'object') {
+          setVariables({...variables, [Object.keys(response)[0]] : Object.values(response)[0]});
+          return `${Object.keys(response)[0]} = ${Object.values(response)[0]}`;
+        }
+      });
     }
 
     switch (request) {
