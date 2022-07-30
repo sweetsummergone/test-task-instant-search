@@ -1,6 +1,6 @@
 import Main from '../Main/Main';
 import { getAllVariables, getVariable, setVariable, unsetVariable, getNumEqualTo, undo, redo, end } from '../../utils/queries';
-import { register, logout } from '../../utils/auth';
+import { register } from '../../utils/auth';
 import { useEffect, useState } from 'react';
 
 function App() {

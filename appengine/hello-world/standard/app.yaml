@@ -13,5 +13,11 @@
 
 # [START gae_quickstart_yaml]
 runtime: nodejs14
-service: api
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /
+  static_files: www/index.html
+  upload: www/index.html
 # [END gae_quickstart_yaml]
