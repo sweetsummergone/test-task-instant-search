@@ -1,25 +1,32 @@
 {
-  "name": "nodejs-docs-samples",
-  "description": "Node.js samples found on https://cloud.google.com",
+  "name": "appengine-hello-world",
+  "description": "Simple Hello World Node.js sample for Google App Engine Standard Environment.",
+  "version": "0.0.2",
+  "private": true,
   "license": "Apache-2.0",
   "author": "Google Inc.",
-  "engines": {
-    "node": ">=12.0.0"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/GoogleCloudPlatform/nodejs-docs-samples.git"
   },
-  "private": true,
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "scripts": {
-    "lint": "gts check",
-    "fix": "gts fix",
-    "test": "echo 'Please run tests in each sample directory.' && exit 1",
-    "generate-ci": "node .github/workflows/generate.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "mocha --exit test/*.test.js"
+  },
+  "dependencies": {
+    "@google-cloud/datastore": "^7.0.0",
+    "@google-cloud/storage": "^6.2.3",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "nodemon": "^2.0.19"
   },
   "devDependencies": {
-    "gts": "^3.1.0",
-    "nunjucks": "^3.2.3",
-    "typescript": "^4.6.4"
+    "mocha": "^9.0.0",
+    "supertest": "^6.0.0"
   }
 }
