@@ -16,15 +16,19 @@
 
 // [START gae_node_request_example]
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
 
 const { catchError, ErrorHandler } = require('./utils/error');
 const auth = require('./middlewares/auth');
 const routerVariables = require('./routes/variables');
+const { createToken } = require('./utils/auth');
 
+app.use(cors());
 app.get('/', (req, res) => {
-  res.status(200).send('Hello, world!').end();
+  const token = createToken(req.ip);
+  res.send({ token });
 });
 app.use('/', auth, routerVariables);
 app.get('*', () => {
