@@ -1,7 +1,7 @@
 const datastore = require('../datastore/datastore');
 
-const sendSuccessResponce = (res, string) => {
-  res.status(200).set('Content-Type', 'text/plain').send(string).end();
+const sendSuccessResponce = (res, obj) => {
+  res.json(obj);
 };
 
 module.exports.insertVariable = async (req, res, next) => {
@@ -15,7 +15,7 @@ module.exports.insertVariable = async (req, res, next) => {
       jwt,
       new Date().toISOString()
     );
-    sendSuccessResponce(res, `${name} = ${value}`);
+    sendSuccessResponce(res, {[name] : value});
   } catch (error) {
     next(error);
   }
@@ -47,14 +47,16 @@ module.exports.getNumEqualTo = async (req, res, next) => {
 
 // Temponary function for debug
 module.exports.getVariables = async (req, res, next) => {
-  const query = datastore.createQuery('Variable').order('updated');
+  const jwt = req.headers.authorization.replace('Bearer ', '');
+  const query = datastore.createQuery('Variable').filter('jwt', '=', jwt);
 
   try {
     datastore.runQuery(query).then((results) => {
-      const variables = results[0].map((variable, i) => {
-        return `${i + 1}. ${variable.name} = ${variable.value}`;
-      });
-      sendSuccessResponce(res, variables.join('\n'));
+      const variables = {}
+      results[0].forEach((variable) => {
+        variables[variable.name] = variable.value}
+      );
+      sendSuccessResponce(res, variables);
     });
   } catch (error) {
     next(error);

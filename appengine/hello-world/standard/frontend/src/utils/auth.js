@@ -8,9 +8,6 @@ export const register = () => {
       'Content-Type': 'application/json',
     },
   }).then((res) => {
-    if (res.token) {
-      localStorage.setItem('jwt', res.token);
-    }
     return res.json();
   });
 };
