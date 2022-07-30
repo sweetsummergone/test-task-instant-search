@@ -18,12 +18,21 @@
 const express = require('express');
 
 const app = express();
-const routerVariables = require('./routes/variables');
 
-app.use('/', routerVariables);
+const { catchError, ErrorHandler } = require('./utils/error');
+const auth = require('./middlewares/auth');
+const routerVariables = require('./routes/variables');
 
 app.get('/', (req, res) => {
   res.status(200).send('Hello, world!').end();
+});
+app.use('/', auth, routerVariables);
+app.get('*', () => {
+  throw new ErrorHandler(404, 'Requested resource not found');
+});
+
+app.use((err, req, res, next) => {
+  catchError(err, res);
 });
 
 // Start the server

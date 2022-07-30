@@ -1,6 +1,15 @@
 const router = require('express').Router();
 
-const { insertVariable, getVariables, deleteEntities, test, getVariable, getVariableValue, unsetVariable, getNumEqualTo, undo, redo } = require('../controllers/variables');
+const {
+  insertVariable,
+  getVariables,
+  deleteEntities,
+  getVariableValue,
+  unsetVariable,
+  getNumEqualTo,
+  undo,
+  redo,
+} = require('../controllers/variables');
 
 router.get('/all', getVariables);
 router.get('/get', getVariableValue);
