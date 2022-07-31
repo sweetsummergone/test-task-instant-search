@@ -3,7 +3,7 @@ import Input from "../Input/Input";
 function Main({onRequest, response, variables}) {
     return (
         <main className="main">
-            <div class="fill_form">
+            <div className="fill_form">
                 <Input onRequest={onRequest} />
                 <h2 className="response">{response}</h2>
             </div>
