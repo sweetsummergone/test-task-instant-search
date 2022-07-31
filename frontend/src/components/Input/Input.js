@@ -26,27 +26,31 @@ function Input({onRequest}) {
 
     return (
         <form className="form" onSubmit={handleSubmit}>
-            <select name="request" style={{width: `${(8 * formData.request.length) + 50}px`}} className="form__request" value={formData.request} onChange={handleChange}>
-                <option value="set" defaultChecked>SET</option>
-                <option value="get">GET</option>
-                <option value="unset">UNSET</option>
-                <option value="numequalto">NUMEQUALTO</option>
-                <option value="undo">UNDO</option>
-                <option value="redo">REDO</option>
-                <option value="end">END</option>
-            </select>
-            {singleInput.includes(formData.request) && (
-                <>
-                    <input required className="form__input" value={formData.request === "numequalto" ? formData.value || "" : formData.name || ""} name={formData.request === "numequalto" ? "value" : "name"} placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
-                </>
-            )}
-            {doubleInput.includes(formData.request) && (
-                <>
-                    <input required className="form__input" value={formData.name || ""} name="name" placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
-                    <input required className="form__input" value={formData.value || ""} name="value" placeholder={placeholders[formData.request][1]} onChange={handleChange}/>
-                </>
-            )}
-            <button className="form__submit">Send</button>
+            <div className="inputs">
+                <select name="request" className="form__request" value={formData.request} onChange={handleChange}>
+                    <option value="set" defaultChecked>SET</option>
+                    <option value="get">GET</option>
+                    <option value="unset">UNSET</option>
+                    <option value="numequalto">NUMEQUALTO</option>
+                    <option value="undo">UNDO</option>
+                    <option value="redo">REDO</option>
+                    <option value="end">END</option>
+                </select>
+                {singleInput.includes(formData.request) && (
+                    <>
+                        <input required className="form__input" value={formData.request === "numequalto" ? formData.value || "" : formData.name || ""} name={formData.request === "numequalto" ? "value" : "name"} placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
+                    </>
+                )}
+                {doubleInput.includes(formData.request) && (
+                    <>
+                        <input required className="form__input" value={formData.name || ""} name="name" placeholder={placeholders[formData.request][0]} onChange={handleChange}/>
+                        <input required className="form__input" value={formData.value || ""} name="value" placeholder={placeholders[formData.request][1]} onChange={handleChange}/>
+                    </>
+                )}
+            </div>
+            <div className="form__button">
+                <button className="form__submit">Send</button>
+            </div>
         </form>
     )
 }
