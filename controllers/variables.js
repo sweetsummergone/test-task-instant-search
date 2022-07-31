@@ -10,10 +10,9 @@ module.exports.insertVariable = async (req, res, next) => {
   const jwt = req.headers.authorization.replace('Bearer ', '');
 
   try {
-    await datastore.insertVatiable(
-      { name, value },
+    await datastore.insertVariable(
+      { name, value, updated: (new Date()).toISOString() },
       jwt,
-      new Date().toISOString()
     );
     sendSuccessResponse(res, {[name] : value});
   } catch (error) {
@@ -26,7 +25,7 @@ module.exports.unsetVariable = async (req, res, next) => {
   const jwt = req.headers.authorization.replace('Bearer ', '');
   
   try {
-    await datastore.unsetVariable(name, jwt);
+    await datastore.unsetVariable({ name, value: 'None' }, jwt);
     sendSuccessResponse(res, {[name] : 'None'});
   } catch (error) {
     next(error);

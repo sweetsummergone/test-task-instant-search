@@ -22,6 +22,10 @@ class DatastoreVariables extends Datastore {
     if (!!currentPopStack[0]) {
       const lastCommand = currentPopStack.pop();
       const push = (operation) => {
+        this._insertVariable(
+          { name: lastCommand.data.name, value: operation === 'unset' ? lastCommand.lastValue : lastCommand.data.value, updated: lastCommand.data.updated },
+          jwt,
+        );
         currentPushStack.push({
           key: lastCommand.key,
           lastValue: lastCommand.lastValue,
@@ -32,60 +36,44 @@ class DatastoreVariables extends Datastore {
         stackToPop.set(jwt, currentPopStack);
       };
       if (lastCommand.operation === 'set') {
-        try {
-          this._insertVariable({ name: lastCommand.data.name, value: lastCommand.lastValue }, jwt, lastCommand.data.updated);
-          push('unset');
-          return {[lastCommand.data.name] : lastCommand.lastValue};
-        } catch (err) {
-          if (!!err.message) throw new ErrorHandler(502, err.message);
-          throw new ErrorHandler(502, 'Something goes wrong. Try again.');
-        }
+        push('unset');
+        return { [lastCommand.data.name]: lastCommand.lastValue };
       } else {
-        try {
-          await this._insertVariable(
-            { name: lastCommand.data.name, value: lastCommand.data.value },
-            jwt,
-            lastCommand.data.updated
-          );
-          push('set');
-          return {[lastCommand.data.name] : currentPushStack[currentPushStack.length - 1].data.value};
-        } catch (err) {
-          if (!!err.message) throw new ErrorHandler(502, err.message);
-          throw new ErrorHandler(502, 'Something goes wrong. Try again.');
-        }
+        push('set');
+        return { [lastCommand.data.name]: currentPushStack[currentPushStack.length - 1].data.value };
       }
     } else {
       return 'NO COMMANDS';
     }
   };
 
-  _insertVariable = async (variable, jwt, updated) => {
-    const unique = await this._validateUnique(variable.name, jwt);
-    const isUnique = !!!unique[0];
-    const variableKey = isUnique ? this.key('Variable') : unique[0][this.KEY];
-
-    const entity = {
-      key: variableKey,
-      data: [
-        {
-          name: 'name',
-          value: variable.name,
-        },
-        {
-          name: 'value',
-          value: variable.value,
-        },
-        {
-          name: 'updated',
-          value: updated,
-        },
-        {
-          name: 'jwt',
-          value: jwt,
-        },
-      ],
-    };
+  _insertVariable = async (variable, jwt) => {
     try {
+      const unique = await this._validateUnique(variable.name, jwt);
+      const isUnique = !!!unique[0];
+      const variableKey = isUnique ? this.key('Variable') : unique[0][this.KEY];
+
+      const entity = {
+        key: variableKey,
+        data: [
+          {
+            name: 'name',
+            value: variable.name,
+          },
+          {
+            name: 'value',
+            value: variable.value,
+          },
+          {
+            name: 'updated',
+            value: variable.updated,
+          },
+          {
+            name: 'jwt',
+            value: jwt,
+          },
+        ],
+      };
       if (isUnique) {
         await this.save(entity);
       } else {
@@ -98,13 +86,13 @@ class DatastoreVariables extends Datastore {
     }
   };
 
-  _unsetVariable = async (name, jwt) => {
-    const query = this.createQuery('Variable')
-      .filter('name', '=', name)
-      .filter('jwt', '=', jwt);
-    const result = await this.runQuery(query);
+  _unsetVariable = async (variable, jwt) => {
     try {
-      await this.delete(result[0][0][this.KEY]);
+      const query = this.createQuery('Variable')
+        .filter('name', '=', variable.name)
+        .filter('jwt', '=', jwt);
+      const result = await this.runQuery(query);
+      this.delete(result[0][0][this.KEY]);
       return result[0][0][this.KEY];
     } catch (err) {
       if (!!err.message) throw new ErrorHandler(502, err.message);
@@ -112,59 +100,71 @@ class DatastoreVariables extends Datastore {
     }
   };
 
-  insertVatiable = async (variable, jwt, updated) => {
-    const lastValue = await this.getVariableValue(variable.name, jwt);
-    const key = await this._insertVariable(variable, jwt, updated);
-    const currentStack = !!this.callStack.get(jwt)
-      ? this.callStack.get(jwt)
-      : [];
-    currentStack.push({
-      key,
-      operation: 'set',
-      lastValue,
-      data: { name: variable.name, value: variable.value, updated },
-    });
-    this.callStack.set(jwt, currentStack);
+  _operateVariable = async (variable, jwt, func, type) => {
+    try {
+      const lastValue = await this.getVariableValue(variable.name, jwt);
+      const key = await func(variable, jwt);
+      const currentStack = !!this.callStack.get(jwt)
+        ? this.callStack.get(jwt)
+        : [];
+      currentStack.push({
+        key,
+        operation: type,
+        lastValue,
+        data: {
+          name: variable.name,
+          value: variable.value,
+          updated: new Date().toISOString(),
+        },
+      });
+      this.callStack.set(jwt, currentStack);
+      this.undoStack.clear();
+    } catch (err) {
+      if (!!err.message) throw new ErrorHandler(502, err.message);
+      throw new ErrorHandler(502, 'Something goes wrong. Try again.');
+    }
   };
 
-  unsetVariable = async (name, jwt) => {
-    const lastValue = await this.getVariableValue(name, jwt);
-    const key = await this._unsetVariable(name, jwt);
-    const currentStack = !!this.undoStack.get(jwt)
-      ? this.undoStack.get(jwt)
-      : [];
-    currentStack.push({
-      key,
-      operation: 'unset',
-      lastValue,
-      data: { name, value: 'None', updated: (new Date()).toISOString() },
-    });
-    this.undoStack.set(jwt, currentStack);
+  insertVariable = async (variable, jwt) => {
+    this._operateVariable(variable, jwt, this._insertVariable, 'set');
+  };
+
+  unsetVariable = async (variable, jwt) => {
+    this._operateVariable(variable, jwt, this._unsetVariable, 'set');
   };
 
   getNumEqualTo = async (value, jwt) => {
-    const query = this.createQuery('Variable')
-      .filter('value', '=', value)
-      .filter('jwt', '=', jwt);
+    try {
+      const query = this.createQuery('Variable')
+        .filter('value', '=', value)
+        .filter('jwt', '=', jwt);
 
-    const result = await this.runQuery(query);
-    return !!result[0][0] ? result[0].length : 0;
+      const result = await this.runQuery(query);
+      return !!result[0][0] ? result[0].length : 0;
+    } catch (err) {
+      if (!!err.message) throw new ErrorHandler(502, err.message);
+      throw new ErrorHandler(502, 'Something goes wrong. Try again.');
+    }
   };
 
   getVariableValue = async (name, jwt) => {
-    const query = this.createQuery('Variable')
-      .filter('name', '=', name)
-      .filter('jwt', '=', jwt);
+    try {
+      const query = this.createQuery('Variable')
+        .filter('name', '=', name)
+        .filter('jwt', '=', jwt);
 
-    const result = await this.runQuery(query);
-    return !!result[0][0] ? result[0][0].value : 'None';
+      const result = await this.runQuery(query);
+      return !!result[0][0] ? result[0][0].value : 'None';
+    } catch (err) {
+      if (!!err.message) throw new ErrorHandler(502, err.message);
+      throw new ErrorHandler(502, 'Something goes wrong. Try again.');
+    }
   };
 
   clear = async (jwt) => {
     const query = this.createQuery('Variable').filter('jwt', '=', jwt);
 
     const result = await this.runQuery(query);
-    // O(n). IDK how to improve it to O(1) without fetching all of keys
     this.delete(result[0].map((entity) => entity[this.KEY]));
     this.callStack.clear();
     this.undoStack.clear();
@@ -172,12 +172,20 @@ class DatastoreVariables extends Datastore {
   };
 
   undo = async (jwt) => {
-    const result = await this._stackOperate(jwt, this.callStack, this.undoStack);
+    const result = await this._stackOperate(
+      jwt,
+      this.callStack,
+      this.undoStack
+    );
     return result;
   };
 
   redo = async (jwt) => {
-    const result = await this._stackOperate(jwt, this.undoStack, this.callStack);
+    const result = await this._stackOperate(
+      jwt,
+      this.undoStack,
+      this.callStack
+    );
     return result;
   };
 }

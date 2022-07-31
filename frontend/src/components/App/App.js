@@ -1,5 +1,5 @@
 import Main from '../Main/Main';
-import { getAllVariables, getVariable, setVariable, unsetVariable, getNumEqualTo, undo, redo, end } from '../../utils/queries';
+import { getVariable, setVariable, unsetVariable, getNumEqualTo, undo, redo, end } from '../../utils/queries';
 import { register } from '../../utils/auth';
 import { useEffect, useState } from 'react';
 
@@ -36,7 +36,7 @@ function App() {
       case 'get':
         const receivedValue = await getVariable(token, data.name);
         validateRequest(receivedValue, () => {
-          setResponse(`${Object.keys(receivedValue)[0]} = ${Object.values(receivedValue)[0]}`);
+          setResponse(`${Object.values(receivedValue)[0]}`);
         })
         break;
       case 'unset':
@@ -81,18 +81,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (token) {
-      getAllVariables(token).then((res) => {
-        setVariables(res);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const handleTabClose = async (event) => {
+    const handleTabClose = (event) => {
       event.preventDefault();
-      await end(localStorage.getItem('jwt'));
+      end(localStorage.getItem('jwt'));
       setVariables({});
       setResponse("");
     };
